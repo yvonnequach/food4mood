@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mood Food</title>
+    <style>
+
+            body {
+                text-align: center;
+
+                font-family: Arial;
+                font-size: 10px;
+                background-color: #1c1d31;
+                color: white;
+                margin: 0 auto;
+            
+            }
+            
+            button {
+              background-color: #e3aaae;
+              border: none;
+              color: white;
+              padding: 15px 32px;
+              text-align: center;
+              text-decoration: none;
+              display: inline-block;
+              font-size: 24px;
+              border-radius: 5px;
+              margin: 25px
+            }
+            
+            video {
+                margin: 0 auto;
+                border-radius: 10px
+            }
+            
+            </style>
+            
+</head>
+
+<meta charset="UTF-8">
+
+<body>
+
+
+    <h1>How are you feeling?</h1>
+    <video id="video" autoplay></video>
+    <br/>
+    <button id="capture">Capture emotion</button>
+    <h1 id="message"></h1>
+
+    <! --  this function is to access the local camera -->
+
+    
+
+    <script type="text/javascript">
+        window.addEventListener("DOMContentLoaded", function() {
+            var video = document.getElementById('video');
+
+        
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const getImage = async () => {
+                video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true })
+                video.play();
+            }
+            getImage()
+        }
+
+        var message = document.getElementById('message');
+                
+        document.getElementById('capture').addEventListener('click', function() {
+            var canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+
+            var context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            var data = {
+                'image_base64': canvas.toDataURL("image/png"),
+                'emotion': '{{ page_data.emotion }}'
+            }
+
+            const getResult = async () => {
+                var result = await fetch('result', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: { 'Content-Type': 'application/json' }
+                })
+
+                var jsonResult = await result.json()
+                message.innerHTML = jsonResult.message
+            }
+            getResult()
+        });
+    })
+    </script>
+
+</body>
+</html>
